@@ -1,7 +1,10 @@
 package com.example.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.io.Serializable;
 
 @Entity
 @Table(name = "games_teams")
@@ -10,11 +13,12 @@ import lombok.*;
 @Getter @Setter
 @EqualsAndHashCode
 @ToString
-public class GamesTeams {
+public class GamesTeams implements Serializable {
 
     @Id
-    @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
+    @ManyToOne(cascade = { CascadeType.REFRESH })
     @JoinColumn(name = "game_id")
+    @JsonBackReference
     private Game game;
 
     @Id

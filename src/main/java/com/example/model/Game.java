@@ -1,18 +1,22 @@
 package com.example.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "games")
 @NoArgsConstructor @AllArgsConstructor
 @Getter @Setter
 @EqualsAndHashCode
-public class Game {
+@ToString
+public class Game implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,12 +26,20 @@ public class Game {
     @JoinColumn(name = "league_id")
     private League league;
 
+    @OneToMany(mappedBy = "game", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
+    @JsonManagedReference
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private List<GamesTeams> gamesTeams = new ArrayList<>();
+
+    @Column(name = "date")
+    private LocalDateTime date;
+
     @Column(name = "parsed_at")
     private LocalDateTime parsedAt;
 
-    @OneToMany(mappedBy = "game", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
-    private List<GamesTeams> gamesTeams = new ArrayList<>();
-
+    @EqualsAndHashCode.Include
+    @ToString.Include
     public List<Team> getTeams() {
         return gamesTeams.stream()
                 .map(GamesTeams::getTeam)
@@ -42,13 +54,17 @@ public class Game {
         }
     }
 
-    @Override
-    public String toString() {
-        return "Game{" +
-                "id=" + id +
-                ", league=" + league +
-                ", parsed-at=" + parsedAt +
-                ", teams=" + getTeams() +
-                '}';
+    public String getLeagueName() {
+        var league = getLeague();
+        if (league == null) {
+            return "";
+        }
+        return league.getName();
+    }
+
+    public String getTeamsString() {
+        return getTeams().stream()
+                .map(Team::getName)
+                .collect(Collectors.joining(" - "));
     }
 }

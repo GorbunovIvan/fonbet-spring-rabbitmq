@@ -3,13 +3,15 @@ package com.example.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
+
 @Entity
 @Table(name = "leagues")
 @NoArgsConstructor @AllArgsConstructor
 @Getter @Setter
 @EqualsAndHashCode(of = "name")
 @ToString
-public class League {
+public class League implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
