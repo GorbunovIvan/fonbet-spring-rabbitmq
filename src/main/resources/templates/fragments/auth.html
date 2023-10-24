@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+<div th:fragment="auth-buttons">
+    <div th:if="${currentUser != null}">
+        <form method="POST" action="/auth/logout">
+            <input type="submit" value="Log out"/>
+        </form>
+    </div>
+    <hr/>
+</div>
+</body>
+</html>

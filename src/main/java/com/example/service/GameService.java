@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +18,13 @@ public class GameService {
 
     public List<Game> getAll() {
         return gameRepository.findAll();
+    }
+
+    public List<Game> getAll(int limit) {
+        return getAll()
+                .stream()
+                .limit(limit)
+                .collect(Collectors.toList());
     }
 
     public Game getById(Long id) {

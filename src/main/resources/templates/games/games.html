@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Games</title>
+</head>
+<body>
+    <div>
+        <div th:insert="~{fragments/auth :: auth-buttons}"></div>
+        <div th:each="game : ${games}">
+            <span th:text="${game.getDate() + ' - ' + game.getLeagueName()}"></span><br/>
+            <span th:text="${game.getTeamsString()}"></span>
+            <hr/>
+        </div>
+    </div>
+</body>
+</html>
