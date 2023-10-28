@@ -44,7 +44,7 @@ public class ParserService {
         send(games);
     }
 
-    private List<Game> parse() {
+    protected List<Game> parse() {
 
         List<Game> games = new ArrayList<>();
 
@@ -128,7 +128,7 @@ public class ParserService {
         }
     }
 
-    private void send(List<Game> games) {
+    protected void send(List<Game> games) {
         for (var game : games) {
             mqTemplate.convertAndSend(queue, game);
             log.info("Game is added to queue: '" + game + "'");

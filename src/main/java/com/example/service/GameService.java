@@ -21,8 +21,7 @@ public class GameService {
     }
 
     public List<Game> getAll(int limit) {
-        return getAll()
-                .stream()
+        return getAll().stream()
                 .limit(limit)
                 .collect(Collectors.toList());
     }

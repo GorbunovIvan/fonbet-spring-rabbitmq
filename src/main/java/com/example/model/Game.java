@@ -26,7 +26,7 @@ public class Game implements Serializable {
     @JoinColumn(name = "league_id")
     private League league;
 
-    @OneToMany(mappedBy = "game", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
     @JsonManagedReference
     @EqualsAndHashCode.Exclude
     @ToString.Exclude

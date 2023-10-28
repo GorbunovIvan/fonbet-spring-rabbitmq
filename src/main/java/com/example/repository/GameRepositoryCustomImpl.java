@@ -36,11 +36,13 @@ public class GameRepositoryCustomImpl implements GameRepositoryCustom {
         Map<String, Team> teamsByNames = findAllTeamsByNames(teamsNames);
         
         // Checking if this game is already in DB
-        var gamesExisting = allGamesOfLeaguesForDays(new ArrayList<>(leaguesByNames.values()), Set.of(game.getDate().toLocalDate()));
-        Map<Game, Game> gamesPersistingToGamesExisting = mapExistingGamesToPersistingGames(List.of(game), gamesExisting);
-        if (!gamesPersistingToGamesExisting.isEmpty()) {
-            log.warn("Game is already in DB with id '" + gamesPersistingToGamesExisting.get(game).getId() + "': '" + game + "'");
-            return null;
+        if (game.getId() == null) {
+            var gamesExisting = allGamesOfLeaguesForDays(new ArrayList<>(leaguesByNames.values()), Set.of(game.getDate().toLocalDate()));
+            Map<Game, Game> gamesPersistingToGamesExisting = mapExistingGamesToPersistingGames(List.of(game), gamesExisting);
+            if (!gamesPersistingToGamesExisting.isEmpty()) {
+                log.warn("Game is already in DB with id '" + gamesPersistingToGamesExisting.get(game).getId() + "': '" + game + "'");
+                return null;
+            }
         }
 
         return mergeEntity(game, leaguesByNames, teamsByNames);
@@ -52,8 +54,8 @@ public class GameRepositoryCustomImpl implements GameRepositoryCustom {
 
         var games = new ArrayList<>(gamesInit);
 
-        var leaguesNames = games.stream().map(game -> game.getLeague().getName()).toList();
-        var teamsNames = games.stream().map(Game::getTeams).flatMap(List::stream).map(Team::getName).toList();
+        var leaguesNames = games.stream().map(Game::getLeagueName).distinct().toList();
+        var teamsNames = games.stream().map(Game::getTeams).flatMap(List::stream).map(Team::getName).distinct().toList();
 
         Map<String, League> leaguesByNames = findAllLeaguesByNames(leaguesNames);
         Map<String, Team> teamsByNames = findAllTeamsByNames(teamsNames);
@@ -62,6 +64,7 @@ public class GameRepositoryCustomImpl implements GameRepositoryCustom {
         // Checking if this game is already in DB
         var gamesExisting = allGamesOfLeaguesForDays(new ArrayList<>(leaguesByNames.values()), days);
         Map<Game, Game> gamesPersistingToGamesExisting = mapExistingGamesToPersistingGames(games, gamesExisting);
+        gamesPersistingToGamesExisting.keySet().removeIf(gamePersisting -> gamePersisting.getId() != null);
         if (!gamesPersistingToGamesExisting.isEmpty()) {
             var gamesToRemove = gamesPersistingToGamesExisting.keySet();
             games.removeAll(gamesToRemove);
@@ -71,7 +74,7 @@ public class GameRepositoryCustomImpl implements GameRepositoryCustom {
         }
 
         if (games.isEmpty()) {
-            return null;
+            return Collections.emptyList();
         }
 
         List<Game> gamesMerged = new ArrayList<>();
@@ -97,6 +100,7 @@ public class GameRepositoryCustomImpl implements GameRepositoryCustom {
         }
         league = entityManager.merge(league);
         game.setLeague(league);
+        leaguesByNames.put(leagueName, league);
 
         // Teams
         var teams = new ArrayList<>(game.getTeams());
@@ -108,6 +112,7 @@ public class GameRepositoryCustomImpl implements GameRepositoryCustom {
             }
             team = entityManager.merge(team);
             teams.set(i, team);
+            teamsByNames.put(teamName, team);
         }
         game.setTeams(teams);
 
