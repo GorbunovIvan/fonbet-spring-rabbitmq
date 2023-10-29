@@ -1,0 +1,54 @@
+
+version: "3.8"
+
+services:
+
+  #  PostgreSQL service
+  postgres-db:
+    image: postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: postgres
+      POSTGRES_DB: fonbet-spring-rabbitmq
+
+  #  RabbitMQ
+  rabbitmq:
+    image: rabbitmq:latest
+    ports:
+      - "4672:5672"  # RabbitMQ port
+      - "14672:15672"  # RabbitMQ management UI port
+
+  #  App
+  fonbet-spring-rabbitmq-service:
+    depends_on:
+      - postgres-db
+      - rabbitmq
+    image: fonbet-spring-rabbitmq-image
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_APPLICATION_JSON : '{
+          "spring.datasource.url" : "jdbc:postgresql://postgres-db:5432/fonbet-spring-rabbitmq",
+          "spring.datasource.username" : "postgres",
+          "spring.datasource.password" : "root",
+          "spring.datasource.driver-class-name" : "org.postgresql.Driver",
+          
+          "spring.datasource.initialization-mode" : "always",
+          "spring.datasource.continue-on-error" : "true",
+          "spring.datasource.max-wait" : "30000",
+          
+          "spring.jpa.hibernate.ddl-auto" : "update",
+          "spring.jpa.show-sql" : "true",
+          "spring.jpa.open-in-view" : "false",
+          
+          "parser.URL" : "https://sport.ua/football",
+          "parser.scheduled.fixedRate.milliseconds" : "10000",
+
+          "spring.rabbitmq.host" : "rabbitmq",
+          "spring.rabbitmq.queue-parser" : "parser",
+          "spring.rabbitmq.listener.simple.acknowledge-mode" : "auto",
+
+          "limit.user.games" : "3"
+        }'
